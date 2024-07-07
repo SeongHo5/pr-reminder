@@ -1,0 +1,17 @@
+name: 'PR Reminder'
+description: 'PR Reminder'
+author: 'SeongHo5'
+inputs:
+  repo-token:
+    description: 'A token for the repo'
+    default: ${{ github.token }}
+    required: false
+  webhook-url:
+    description: 'A webhook URL for reminders'
+    required: true
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+branding:
+  color: gray-dark
+  icon: 'aperture'
