@@ -6,9 +6,15 @@ inputs:
     description: 'A token for the repo'
     default: ${{ github.token }}
     required: false
-  webhook-url:
-    description: 'A webhook URL for reminders'
+  platform:
+    description: '리마인드를 보낼 플랫폼(slack | discord)'
     required: true
+  webhook-url:
+    description: '생성한 Webhook URL'
+    required: true
+  reminder-time:
+    description: '리마인드를 보낼 기준 시간, PR이 이 시간 이상 대기했다면 리마인드를 보냅니다!'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'

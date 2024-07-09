@@ -1,1 +1,1 @@
-# pr-reminder
+# PR Reminder For Slack & Discord
