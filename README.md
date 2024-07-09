@@ -34,5 +34,6 @@ jobs:
 
 ### Notes
 - `schedule`으로 스케줄 설정을 하는 경우, cron 표현식은 반드시 **UTC** 기준으로 작성 해주세요.
+  - 한국 시간(KST)은 UTC보다 **9시간** 빠릅니다. 따라서, 한국 시간 12시에 리마인드 알림을 받고 싶다면, UTC 기준 3시로 설정해야 합니다.
 - Workflow가 PR 정보를 읽어오려면, `permissions`의 `pull-requests: read`를 필수로 입력해야 합니다. 
 - `webhook-url`은 GitHub Secrets에 저장하여 사용하는 것을 권장합니다.
