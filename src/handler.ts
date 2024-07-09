@@ -7,6 +7,7 @@ export async function doPullRequestRemind(client: Client, context: Context, remi
     const {owner, repo} = context.repo;
     const platform = reminderConfig.platform.toLowerCase();
     const webhookUrl = reminderConfig.webhookUrl;
+    const remindTime = reminderConfig.remindTime ?? 24;
     const pullRequests = await client.rest.pulls.list({
         owner,
         repo,
@@ -14,7 +15,7 @@ export async function doPullRequestRemind(client: Client, context: Context, remi
     });
 
     const now = new Date();
-    const remindTimeToMilliseconds = reminderConfig.remindTime * 60 * 1000;
+    const remindTimeToMilliseconds = remindTime * 60 * 60 * 1000;
     const twentyFourHoursAgo = new Date(now.getTime() - remindTimeToMilliseconds);
 
     const oldPRs = pullRequests.data.filter(pr => {
