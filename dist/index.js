@@ -32699,19 +32699,18 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.doPullRequestRemind = doPullRequestRemind;
 const axios_1 = __importDefault(__nccwpck_require__(7913));
 const utils_1 = __nccwpck_require__(8984);
-async function doPullRequestRemind(client, context, webhookUrl) {
-    if (!context.payload.pull_request) {
-        throw new Error('the webhook payload is not exist');
-    }
+async function doPullRequestRemind(client, context, reminderConfig) {
     const { owner, repo } = context.repo;
+    const platform = reminderConfig.platform.toLowerCase();
+    const webhookUrl = reminderConfig.webhookUrl;
     const pullRequests = await client.rest.pulls.list({
         owner,
         repo,
         state: 'open',
     });
     const now = new Date();
-    const dayAsMilliseconds = 24 * 60 * 60 * 1000;
-    const twentyFourHoursAgo = new Date(now.getTime() - dayAsMilliseconds);
+    const remindTimeToMilliseconds = reminderConfig.remindTime * 60 * 1000;
+    const twentyFourHoursAgo = new Date(now.getTime() - remindTimeToMilliseconds);
     const oldPRs = pullRequests.data.filter(pr => {
         const createdAt = new Date(pr.created_at);
         const isAfterTwentyFourHours = createdAt < twentyFourHoursAgo;
@@ -32724,9 +32723,10 @@ async function doPullRequestRemind(client, context, webhookUrl) {
             return `- #${pr.number}: ${pr.title} (생성일: ${pr.created_at}) ${mentions}`;
         }));
         const message = `[PR 리마인더] 24시간 이상 리뷰를 기다리는 PR이 ${oldPRs.length}개 있어요! \n${contents.join('\n')}`;
-        await axios_1.default.post(webhookUrl, {
-            content: message
-        });
+        const payload = platform === 'slack'
+            ? { text: message }
+            : { content: message };
+        await axios_1.default.post(webhookUrl, payload);
     }
 }
 
@@ -32766,17 +32766,13 @@ exports.run = run;
 const core = __importStar(__nccwpck_require__(9467));
 const github = __importStar(__nccwpck_require__(9602));
 const handler = __importStar(__nccwpck_require__(574));
-const utils_1 = __nccwpck_require__(8984);
+const utils = __importStar(__nccwpck_require__(8984));
 async function run() {
     try {
         const token = core.getInput('repo-token', { required: true });
         const client = github.getOctokit(token);
-        const webhookUrl = core.getInput('webhook-url', { required: true });
-        if (!webhookUrl || !(0, utils_1.validateWebhookUrl)(webhookUrl)) {
-            core.setFailed('The Webhook URL is invalid.');
-            return;
-        }
-        await handler.doPullRequestRemind(client, github.context, webhookUrl);
+        const reminderConfig = await utils.fetchConfig();
+        await handler.doPullRequestRemind(client, github.context, reminderConfig);
     }
     catch (error) {
         if (error instanceof Error) {
@@ -32789,13 +32785,37 @@ async function run() {
 /***/ }),
 
 /***/ 8984:
-/***/ ((__unused_webpack_module, exports) => {
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.getPendingReviewerLists = getPendingReviewerLists;
-exports.validateWebhookUrl = validateWebhookUrl;
+exports.fetchConfig = fetchConfig;
+const core = __importStar(__nccwpck_require__(9467));
 async function getPendingReviewerLists(client, context) {
     const { owner, repo } = context.repo;
     const pr = context.payload.pull_request;
@@ -32807,6 +32827,25 @@ async function getPendingReviewerLists(client, context) {
     const reviewers = pr.requested_reviewers.map((reviewer) => reviewer.login);
     const reviewedReviewers = reviews.data.users.map((reviewer) => reviewer.login);
     return reviewers.filter(reviewer => !reviewedReviewers.includes(reviewer));
+}
+async function fetchConfig() {
+    const platform = core.getInput('platform', { required: true });
+    const webhookUrl = core.getInput('webhook-url', { required: true });
+    const remindTime = parseInt(core.getInput('remind-time', { required: true }));
+    if (platform.toLowerCase() !== 'slack' && platform.toLowerCase() !== 'discord') {
+        throw new Error('플랫폼은 slack 또는 discord만 지원합니다.');
+    }
+    if (!validateWebhookUrl(webhookUrl)) {
+        throw new Error('Webhook URL 형식이 유효하지 않습니다.');
+    }
+    if (isNaN(remindTime)) {
+        throw new Error('리마인드 시간은 숫자여야 합니다.');
+    }
+    return {
+        platform,
+        webhookUrl,
+        remindTime
+    };
 }
 function validateWebhookUrl(url) {
     const urlRegex = /^(http|https):\/\/[^\s$.?#].\S*$/gm;

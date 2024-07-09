@@ -4,10 +4,6 @@ import axios from "axios";
 import {getPendingReviewerLists} from "./utils";
 
 export async function doPullRequestRemind(client: Client, context: Context, reminderConfig: ReminderConfig) {
-    if (!context.payload.pull_request) {
-        throw new Error('the webhook payload is not exist');
-    }
-
     const {owner, repo} = context.repo;
     const platform = reminderConfig.platform.toLowerCase();
     const webhookUrl = reminderConfig.webhookUrl;
