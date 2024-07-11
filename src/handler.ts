@@ -28,7 +28,11 @@ export async function doPullRequestRemind(client: Client, context: Context, remi
         const contents = await Promise.all(oldPRs.map(async pr => {
             const pendingReviewers = await getPendingReviewerLists(client, context);
             const mentions = pendingReviewers.map(reviewer => `@${reviewer}`).join(' ');
-            return `- #${pr.number}: ${pr.title} (생성일: ${pr.created_at}) ${mentions}`;
+
+            const createdAt = new Date(pr.created_at);
+            const waitingTimeInHours = Math.floor((now.getTime() - createdAt.getTime()) / (60 * 60 * 1000));
+
+            return `- [#${pr.number}](${pr.html_url}): ${pr.title} (${waitingTimeInHours}시간 동안 기다리는 중..) [${mentions}]`;
         }));
         const message = `[PR 리마인더] 24시간 이상 리뷰를 기다리는 PR이 ${oldPRs.length}개 있어요! \n${contents.join('\n')}`;
         const payload = platform === 'slack'
