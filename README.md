@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Run PR reminder
-        uses: SeongHo5/pr-reminder@v1.5
+        uses: SeongHo5/pr-reminder@v1.6
         with:
           platform: slack
           webhook-url: ${{ secrets.WEBHOOK_URL }}

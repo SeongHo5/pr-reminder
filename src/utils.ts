@@ -9,12 +9,12 @@ export async function getPendingReviewerLists(client: Client, context: Context):
     const {owner, repo} = context.repo;
     const pr = context.payload.pull_request;
 
-    core.debug(`Fetching requested reviewers for PR #${context.issue.number}`);
+    core.debug(`Fetching requested reviewers for PR #${pr.number}`);
 
     const reviews = await client.rest.pulls.listRequestedReviewers({
         owner,
         repo,
-        pull_number: context.issue.number,
+        pull_number: pr.number
     });
 
     const reviewers: string[] = pr.requested_reviewers.map((reviewer: { login: string }) => reviewer.login);
