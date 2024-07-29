@@ -32722,7 +32722,6 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.doPullRequestRemind = doPullRequestRemind;
 const core = __importStar(__nccwpck_require__(9467));
 const axios_1 = __importDefault(__nccwpck_require__(7913));
-const utils_1 = __nccwpck_require__(8984);
 async function doPullRequestRemind(client, context, reminderConfig) {
     const { owner, repo } = context.repo;
     const platform = reminderConfig.platform.toLowerCase();
@@ -32745,11 +32744,9 @@ async function doPullRequestRemind(client, context, reminderConfig) {
     core.debug(`[DEBUG] ${oldPRs.length} pull requests need reminders.`);
     if (oldPRs.length > 0) {
         const contents = await Promise.all(oldPRs.map(async (pr) => {
-            const pendingReviewers = await (0, utils_1.getPendingReviewerLists)(client, context);
-            const mentions = pendingReviewers.map(reviewer => `@${reviewer}`).join(' ');
             const createdAt = new Date(pr.created_at);
             const waitingTimeInHours = Math.floor((now.getTime() - createdAt.getTime()) / (60 * 60 * 1000));
-            return `- [#${pr.number}](${pr.html_url}): ${pr.title} (${waitingTimeInHours}시간 동안 기다리는 중..) [${mentions}]`;
+            return `- [#${pr.number}](${pr.html_url}): ${pr.title} (${waitingTimeInHours}시간 동안 기다리는 중..)`;
         }));
         const message = `[PR 리마인더] 24시간 이상 리뷰를 기다리는 PR이 ${oldPRs.length}개 있어요! \n${contents.join('\n')}`;
         const payload = platform === 'slack'
