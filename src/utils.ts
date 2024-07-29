@@ -9,6 +9,8 @@ export async function getPendingReviewerLists(client: Client, context: Context):
     const {owner, repo} = context.repo;
     const pr = context.payload.pull_request;
 
+    core.debug(`Fetching requested reviewers for PR #${context.issue.number}`);
+
     const reviews = await client.rest.pulls.listRequestedReviewers({
         owner,
         repo,
@@ -17,6 +19,9 @@ export async function getPendingReviewerLists(client: Client, context: Context):
 
     const reviewers: string[] = pr.requested_reviewers.map((reviewer: { login: string }) => reviewer.login);
     const reviewedReviewers: string[] = reviews.data.users.map((reviewer: { login: string }) => reviewer.login);
+
+    core.debug(`Requested reviewers: ${reviewers.join(', ')}`);
+    core.debug(`Reviewed reviewers: ${reviewedReviewers.join(', ')}`);
 
     return reviewers.filter(reviewer => !reviewedReviewers.includes(reviewer));
 }

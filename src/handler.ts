@@ -1,3 +1,4 @@
+import * as core from '@actions/core';
 import {Client, ReminderConfig} from "./types";
 import {Context} from "@actions/github/lib/context";
 import axios from "axios";
@@ -14,6 +15,8 @@ export async function doPullRequestRemind(client: Client, context: Context, remi
         state: 'open',
     });
 
+    core.debug(`[DEBUG] Found ${pullRequests.data.length} open pull requests`);
+
     const now = new Date();
     const remindTimeToMilliseconds = remindTime * 60 * 60 * 1000;
     const twentyFourHoursAgo = new Date(now.getTime() - remindTimeToMilliseconds);
@@ -23,6 +26,8 @@ export async function doPullRequestRemind(client: Client, context: Context, remi
         const isAfterTwentyFourHours = createdAt < twentyFourHoursAgo;
         return !pr.merged_at && isAfterTwentyFourHours;
     });
+
+    core.debug(`[DEBUG] ${oldPRs.length} pull requests need reminders.`);
 
     if (oldPRs.length > 0) {
         const contents = await Promise.all(oldPRs.map(async pr => {
@@ -39,6 +44,7 @@ export async function doPullRequestRemind(client: Client, context: Context, remi
             ? {text: message}
             : {content: message};
 
+        core.debug(`Sending reminder message: ${message}`);
         await axios.post(webhookUrl, payload);
     }
 }

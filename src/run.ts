@@ -13,6 +13,7 @@ export async function run() {
         await handler.doPullRequestRemind(client, github.context, reminderConfig);
     } catch (error) {
         if (error instanceof Error) {
+            core.debug(error.message);
             core.setFailed(error.message);
         }
     }

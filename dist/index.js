@@ -32692,11 +32692,35 @@ function wrappy (fn, cb) {
 
 "use strict";
 
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.doPullRequestRemind = doPullRequestRemind;
+const core = __importStar(__nccwpck_require__(9467));
 const axios_1 = __importDefault(__nccwpck_require__(7913));
 const utils_1 = __nccwpck_require__(8984);
 async function doPullRequestRemind(client, context, reminderConfig) {
@@ -32709,6 +32733,7 @@ async function doPullRequestRemind(client, context, reminderConfig) {
         repo,
         state: 'open',
     });
+    core.debug(`[DEBUG] Found ${pullRequests.data.length} open pull requests`);
     const now = new Date();
     const remindTimeToMilliseconds = remindTime * 60 * 60 * 1000;
     const twentyFourHoursAgo = new Date(now.getTime() - remindTimeToMilliseconds);
@@ -32717,6 +32742,7 @@ async function doPullRequestRemind(client, context, reminderConfig) {
         const isAfterTwentyFourHours = createdAt < twentyFourHoursAgo;
         return !pr.merged_at && isAfterTwentyFourHours;
     });
+    core.debug(`[DEBUG] ${oldPRs.length} pull requests need reminders.`);
     if (oldPRs.length > 0) {
         const contents = await Promise.all(oldPRs.map(async (pr) => {
             const pendingReviewers = await (0, utils_1.getPendingReviewerLists)(client, context);
@@ -32729,6 +32755,7 @@ async function doPullRequestRemind(client, context, reminderConfig) {
         const payload = platform === 'slack'
             ? { text: message }
             : { content: message };
+        core.debug(`Sending reminder message: ${message}`);
         await axios_1.default.post(webhookUrl, payload);
     }
 }
@@ -32779,6 +32806,7 @@ async function run() {
     }
     catch (error) {
         if (error instanceof Error) {
+            core.debug(error.message);
             core.setFailed(error.message);
         }
     }
@@ -32822,6 +32850,7 @@ const core = __importStar(__nccwpck_require__(9467));
 async function getPendingReviewerLists(client, context) {
     const { owner, repo } = context.repo;
     const pr = context.payload.pull_request;
+    core.debug(`Fetching requested reviewers for PR #${context.issue.number}`);
     const reviews = await client.rest.pulls.listRequestedReviewers({
         owner,
         repo,
@@ -32829,6 +32858,8 @@ async function getPendingReviewerLists(client, context) {
     });
     const reviewers = pr.requested_reviewers.map((reviewer) => reviewer.login);
     const reviewedReviewers = reviews.data.users.map((reviewer) => reviewer.login);
+    core.debug(`Requested reviewers: ${reviewers.join(', ')}`);
+    core.debug(`Reviewed reviewers: ${reviewedReviewers.join(', ')}`);
     return reviewers.filter(reviewer => !reviewedReviewers.includes(reviewer));
 }
 async function fetchConfig() {
