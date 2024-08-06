@@ -1,6 +1,6 @@
 {
   "name": "pr-reminder",
-  "version": "1.7",
+  "version": "2.0",
   "description": "PR Reminder For Slack & Discord",
   "main": "src/index.ts",
   "scripts": {

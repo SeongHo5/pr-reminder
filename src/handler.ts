@@ -22,9 +22,12 @@ export async function doPullRequestRemind(client: Client, context: Context, remi
     const twentyFourHoursAgo = new Date(now.getTime() - remindTimeToMilliseconds);
 
     const oldPRs = pullRequests.data.filter(pr => {
+        const isNotMerged = !pr.merged_at;
+        const isNotDraft = !pr.draft;
+
         const createdAt = new Date(pr.created_at);
         const isAfterTwentyFourHours = createdAt < twentyFourHoursAgo;
-        return !pr.merged_at && isAfterTwentyFourHours;
+        return isNotDraft && isNotMerged && isAfterTwentyFourHours;
     });
 
     core.debug(`[DEBUG] ${oldPRs.length} pull requests need reminders.`);
