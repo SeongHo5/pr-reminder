@@ -1,20 +1,33 @@
 import * as core from '@actions/core';
 import {Client, ReminderConfig} from "./types";
 import {Context} from "@actions/github/lib/context";
+import {DateTime} from "luxon";
 import axios from "axios";
-import {getPendingReviewerLists} from "./utils";
 
 export async function doPullRequestRemind(client: Client, context: Context, reminderConfig: ReminderConfig) {
     const {owner, repo} = context.repo;
     const platform = reminderConfig.platform.toLowerCase();
     const webhookUrl = reminderConfig.webhookUrl;
-    const remindTime = reminderConfig.remindTime ?? 24;
+    const remindTime = reminderConfig.remindTime;
+    const skipOnWeekend = reminderConfig.skipOnWeekend;
+    const timeZone = reminderConfig.timeZone;
+
+    core.debug(`[DEBUG] Start PR reminder process.`);
+    core.debug(`[DEBUG] with Config: ${JSON.stringify(reminderConfig)}`);
+
+    if (skipOnWeekend) {
+        const dayOfWeek = DateTime.now().setZone(timeZone).weekday;
+        if (dayOfWeek === 6 || dayOfWeek === 7) {
+            core.debug(`[DEBUG] Skipping reminder on weekend.`);
+            return;
+        }
+    }
+
     const pullRequests = await client.rest.pulls.list({
         owner,
         repo,
         state: 'open',
     });
-
     core.debug(`[DEBUG] Found ${pullRequests.data.length} open pull requests`);
 
     const now = new Date();

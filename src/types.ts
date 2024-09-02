@@ -13,4 +13,6 @@ export interface ReminderConfig {
     platform: string;
     webhookUrl: string;
     remindTime: number;
+    skipOnWeekend: boolean;
+    timeZone: string;
 }

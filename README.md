@@ -27,10 +27,14 @@ jobs:
           platform: slack
           webhook-url: ${{ secrets.WEBHOOK_URL }}
           remind-time: 24
+          skip-on-weekend: true
+          timezone: Asia/Seoul
 ```
 - `platform`: 웹훅 알림을 받을 플랫폼을 선택합니다. (slack, discord)
 - `webhook-url`: Slack 또는 Discord에서 생성한 웹훅 URL을 입력합니다.
 - `remind-time`: 리마인드 대상이 되는 PR의 최대 대기 시간을 입력합니다. (단위: 시간)
+- `skip-on-weekend`: 주말에도 리마인드 알림을 받을지 여부를 결정합니다. (true, false)
+- `timezone`: 워크플로우의 기준 시간대를 설정합니다. `skip-on-weekend`를 사용할 경우 필수로 입력해야 합니다. (기본값: "Asia/Seoul")
 
 ### Notes
 - `schedule`으로 스케줄 설정을 하는 경우, cron 표현식은 반드시 **UTC** 기준으로 작성 해주세요.

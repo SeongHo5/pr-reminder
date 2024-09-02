@@ -15,6 +15,13 @@ inputs:
   remind-time:
     description: '리마인드를 보낼 기준 시간, PR이 이 시간 이상 대기했다면 리마인드를 보냅니다!'
     required: false
+  skip-on-weekend:
+    description: '주말엔 쉬어야죠!'
+    required: false
+  timezone:
+    description: '타임존'
+    default: 'Asia/Seoul'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'

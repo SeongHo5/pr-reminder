@@ -29,21 +29,26 @@ export async function getPendingReviewerLists(client: Client, context: Context):
 export async function fetchConfig(): Promise<ReminderConfig> {
     const platform = core.getInput('platform', {required: true});
     const webhookUrl = core.getInput('webhook-url', {required: true});
-    const remindTime = parseInt(core.getInput('remind-time', {required: true}));
+    const remindTime = parseInt(core.getInput('remind-time')) || 24;
+    const skipOnWeekend = core.getInput('skip-on-weekend') === 'true' || false;
+    const timeZone = core.getInput('time-zone') || 'Asia/Seoul';
 
     if (platform.toLowerCase() !== 'slack' && platform.toLowerCase() !== 'discord') {
-        throw new Error('플랫폼은 slack 또는 discord만 지원합니다.');
+        throw new Error('Currently Slack & Discord are supported only.');
     }
     if (!validateWebhookUrl(webhookUrl)) {
-        throw new Error('Webhook URL 형식이 유효하지 않습니다.');
+        throw new Error('Webhook URL format is Invalid.');
     }
     if (isNaN(remindTime)) {
-        throw new Error('리마인드 시간은 숫자여야 합니다.');
+        throw new Error('Remine Time MUST be a number.');
     }
+
     return {
         platform,
         webhookUrl,
-        remindTime
+        remindTime,
+        skipOnWeekend,
+        timeZone
     };
 }
 
