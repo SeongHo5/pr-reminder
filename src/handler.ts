@@ -47,8 +47,6 @@ export async function doPullRequestRemind(client: Client, context: Context, remi
 
     if (oldPRs.length > 0) {
         const contents = await Promise.all(oldPRs.map(async pr => {
-            // const pendingReviewers = await getPendingReviewerLists(client, context);
-            // const mentions = pendingReviewers.map(reviewer => `@${reviewer}`).join(' ');
 
             const createdAt = new Date(pr.created_at);
             const waitingTimeInHours = Math.floor((now.getTime() - createdAt.getTime()) / (60 * 60 * 1000));

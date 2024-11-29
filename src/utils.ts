@@ -1,30 +1,5 @@
-import {Client, ConfigOption, ReminderConfig} from "./types";
-import {Context} from "@actions/github/lib/context";
+import {ReminderConfig} from "./types";
 import * as core from "@actions/core";
-
-/**
- * 아직 리뷰를 진행하지 않은 리뷰어 목록을 가져옵니다.
- */
-export async function getPendingReviewerLists(client: Client, context: Context): Promise<string[]> {
-    const {owner, repo} = context.repo;
-    const pr = context.payload.pull_request;
-
-    core.debug(`Fetching requested reviewers for PR #${pr.number}`);
-
-    const reviews = await client.rest.pulls.listRequestedReviewers({
-        owner,
-        repo,
-        pull_number: pr.number
-    });
-
-    const reviewers: string[] = pr.requested_reviewers.map((reviewer: { login: string }) => reviewer.login);
-    const reviewedReviewers: string[] = reviews.data.users.map((reviewer: { login: string }) => reviewer.login);
-
-    core.debug(`Requested reviewers: ${reviewers.join(', ')}`);
-    core.debug(`Reviewed reviewers: ${reviewedReviewers.join(', ')}`);
-
-    return reviewers.filter(reviewer => !reviewedReviewers.includes(reviewer));
-}
 
 export async function fetchConfig(): Promise<ReminderConfig> {
     const platform = core.getInput('platform', {required: true});
