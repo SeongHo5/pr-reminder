@@ -1,11 +1,14 @@
-import * as github from '@actions/github'
+import * as github from "@actions/github";
 
-export type Client = ReturnType<typeof github.getOctokit>
+export type Client = ReturnType<typeof github.getOctokit>;
+
+export type Platform = "slack" | "discord" | "github-comments";
 
 export interface ReminderConfig {
-    platform: string;
-    webhookUrl: string;
-    remindTime: number;
-    skipOnWeekend: boolean;
-    timeZone: string;
+  platform: Platform;
+  webhookUrl: string;
+  timeZone: string;
+  remindTime: number;
+  workHours?: { start: number; end: number };
+  skipOnWeekend: boolean;
 }
