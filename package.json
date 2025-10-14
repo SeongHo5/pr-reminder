@@ -4,7 +4,8 @@
   "description": "PR Reminder For Slack & Discord",
   "main": "src/index.ts",
   "scripts": {
-    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "build": "ncc build",
     "start": "node dist/main.js"
   },
   "keywords": [],
@@ -15,8 +16,9 @@
     "@actions/github": "^6.0.0",
     "@octokit/rest": "^20.1.1",
     "@octokit/webhooks-types": "^7.5.1",
-    "axios": "^1.7.2",
+    "axios": "1.12.0",
     "luxon": "^3.5.0",
+    "prettier": "^3.6.2",
     "tsc": "^2.0.4"
   },
   "devDependencies": {
